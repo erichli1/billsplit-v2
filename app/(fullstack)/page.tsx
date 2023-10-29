@@ -37,7 +37,9 @@ export default function Home() {
         />
         <Button
           variant="outline"
-          onClick={() => createRoom({ initiator: name })}
+          onClick={() => {
+            createRoom({ initiator: name }).catch(console.error);
+          }}
           disabled={name === ""}
         >
           Create room
