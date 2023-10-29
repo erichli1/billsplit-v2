@@ -83,11 +83,16 @@ export const addRoom = mutation({
   },
 });
 
-export const getRooms = query({
-  args: {},
-  handler: async (ctx) => {
-    const rooms = await ctx.db.query("rooms").collect();
-    return rooms;
+export const getRoom = query({
+  args: { roomCode: v.string() },
+  handler: async (ctx, { roomCode }) => {
+    const room = await ctx.db
+      .query("rooms")
+      .filter((q) => q.eq(q.field("code"), roomCode))
+      .collect();
+    if (!room || room.length === 0) return null;
+
+    return room[0];
   },
 });
 
