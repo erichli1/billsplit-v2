@@ -85,8 +85,30 @@ export const addRoom = mutation({
 
 export const getRooms = query({
   args: {},
-  handler: async (ctx, _) => {
+  handler: async (ctx) => {
     const rooms = await ctx.db.query("rooms").collect();
     return rooms;
+  },
+});
+
+export const joinRoom = mutation({
+  args: { roomId: v.id("rooms"), name: v.string() },
+  handler: async (ctx, { roomId, name }) => {
+    const room = await ctx.db.get(roomId);
+    if (!room) throw new Error("Room not found");
+
+    await ctx.db.patch(roomId, { members: [...room.members, name] });
+  },
+});
+
+export const leaveRoom = mutation({
+  args: { roomId: v.id("rooms"), name: v.string() },
+  handler: async (ctx, { roomId, name }) => {
+    const room = await ctx.db.get(roomId);
+    if (!room) throw new Error("Room not found");
+
+    await ctx.db.patch(roomId, {
+      members: room.members.filter((member) => member !== name),
+    });
   },
 });
