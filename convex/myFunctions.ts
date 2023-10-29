@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation, action } from "./_generated/server";
 import { api } from "./_generated/api";
+import { generateRandomFourLetterString } from "./utils";
 
 // Write your Convex functions in any file inside this directory (`convex`).
 // See https://docs.convex.dev/functions for more.
@@ -67,5 +68,25 @@ export const myAction = action({
     await ctx.runMutation(api.myFunctions.addNumber, {
       value: args.first,
     });
+  },
+});
+
+export const addRoom = mutation({
+  args: {
+    initiator: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("rooms", {
+      code: generateRandomFourLetterString(),
+      members: [args.initiator],
+    });
+  },
+});
+
+export const getRooms = query({
+  args: {},
+  handler: async (ctx, _) => {
+    const rooms = await ctx.db.query("rooms").collect();
+    return rooms;
   },
 });
