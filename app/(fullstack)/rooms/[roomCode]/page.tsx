@@ -5,10 +5,15 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
-  const [name, setName] = useState<string>("");
-  const [inRoom, setInRoom] = useState<boolean>(false);
+  const searchParams = useSearchParams();
+  const nameFromSearchParams = searchParams.get("name");
+  const inRoomFromSearchParams = searchParams.get("inRoom") === "true";
+
+  const [name, setName] = useState<string>(nameFromSearchParams ?? "");
+  const [inRoom, setInRoom] = useState<boolean>(inRoomFromSearchParams);
 
   const room = useQuery(api.myFunctions.getRoom, { roomCode: params.roomCode });
   const joinRoom = useMutation(api.myFunctions.joinRoom);

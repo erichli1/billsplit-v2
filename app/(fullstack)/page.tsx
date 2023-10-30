@@ -6,10 +6,13 @@ import { api } from "@/convex/_generated/api";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Link } from "@/components/typography/link";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [name, setName] = useState<string>("");
   const [joinRoomInput, setJoinRoomInput] = useState<string>("");
+
+  const router = useRouter();
 
   const getRoom = useQuery(api.myFunctions.getRoom, {
     roomCode: joinRoomInput,
@@ -36,7 +39,11 @@ export default function Home() {
         <Button
           variant="outline"
           onClick={() => {
-            createRoom({ initiator: name }).catch(console.error);
+            createRoom({ initiator: name })
+              .then((code) =>
+                router.push(`/rooms/${code}?name=${name}&inRoom=true`)
+              )
+              .catch(console.error);
           }}
           disabled={name === ""}
         >

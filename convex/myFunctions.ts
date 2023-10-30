@@ -76,10 +76,12 @@ export const addRoom = mutation({
     initiator: v.string(),
   },
   handler: async (ctx, args) => {
+    const code = generateRandomFourLetterString();
     await ctx.db.insert("rooms", {
-      code: generateRandomFourLetterString(),
+      code: code,
       members: [args.initiator],
     });
+    return code;
   },
 });
 
