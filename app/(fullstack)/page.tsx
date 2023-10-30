@@ -9,7 +9,6 @@ import { Link } from "@/components/typography/link";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [name, setName] = useState<string>("");
   const [joinRoomInput, setJoinRoomInput] = useState<string>("");
 
   const router = useRouter();
@@ -18,7 +17,7 @@ export default function Home() {
     roomCode: joinRoomInput,
   });
 
-  const createRoom = useMutation(api.myFunctions.addRoom);
+  const createRoom = useMutation(api.myFunctions.createRoom);
 
   return (
     <main className="container max-w-2xl flex flex-col gap-2 mt-8">
@@ -27,29 +26,16 @@ export default function Home() {
       <br />
 
       <h2 className="font-bold">Create Room</h2>
-      {name === "" && (
-        <p className="text-sm">You need to enter your name to create a room</p>
-      )}
-      <div className="flex w-full items-center space-x-2">
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
-        />
-        <Button
-          variant="outline"
-          onClick={() => {
-            createRoom({ initiator: name })
-              .then((code) =>
-                router.push(`/rooms/${code}?name=${name}&inRoom=true`)
-              )
-              .catch(console.error);
-          }}
-          disabled={name === ""}
-        >
-          Create room
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        onClick={() => {
+          createRoom()
+            .then((code) => router.push(`/rooms/${code}`))
+            .catch(console.error);
+        }}
+      >
+        Create room
+      </Button>
 
       <br />
 

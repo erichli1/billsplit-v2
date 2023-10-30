@@ -71,18 +71,12 @@ export const myAction = action({
   },
 });
 
-export const addRoom = mutation({
-  args: {
-    initiator: v.string(),
-  },
-  handler: async (ctx, { initiator }) => {
+export const createRoom = mutation({
+  args: {},
+  handler: async (ctx) => {
     const code = generateRandomFourLetterString();
-    const roomId = await ctx.db.insert("rooms", {
+    await ctx.db.insert("rooms", {
       code: code,
-    });
-    await ctx.db.insert("members", {
-      name: initiator,
-      roomId,
     });
     return code;
   },
@@ -97,11 +91,16 @@ export const getRoom = query({
       .collect();
     if (!room || room.length === 0) return null;
 
-    return room[0];
+    const members = await ctx.db
+      .query("members")
+      .filter((q) => q.eq(q.field("roomId"), room[0]._id))
+      .collect();
+
+    return { ...room[0], members };
   },
 });
 
-export const joinRoom = mutation({
+export const addMemberToRoom = mutation({
   args: { roomId: v.id("rooms"), name: v.string() },
   handler: async (ctx, { roomId, name }) => {
     const room = await ctx.db.get(roomId);
@@ -114,21 +113,9 @@ export const joinRoom = mutation({
   },
 });
 
-export const leaveRoom = mutation({
-  args: { roomId: v.id("rooms"), name: v.string() },
-  handler: async (ctx, { roomId, name }) => {
-    const room = await ctx.db.get(roomId);
-    if (!room) throw new Error("Room not found");
-
-    const member = await ctx.db
-      .query("members")
-      .filter(
-        (q) => q.eq(q.field("roomId"), roomId) && q.eq(q.field("name"), name)
-      )
-      .collect();
-
-    if (!member || member.length === 0) throw new Error("Member not found");
-
-    await ctx.db.delete(member[0]._id);
+export const removeMember = mutation({
+  args: { memberId: v.id("members") },
+  handler: async (ctx, { memberId }) => {
+    await ctx.db.delete(memberId);
   },
 });
