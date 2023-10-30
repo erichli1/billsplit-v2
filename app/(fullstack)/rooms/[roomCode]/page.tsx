@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@/components/typography/link";
 import { Badge } from "@/components/ui/badge";
 import { Id } from "@/convex/_generated/dataModel";
+import { X } from "lucide-react";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const [name, setName] = useState<string>("");
@@ -17,10 +18,24 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
 
   const room = useQuery(api.myFunctions.getRoom, { roomCode: params.roomCode });
   const addMemberToRoom = useMutation(api.myFunctions.addMemberToRoom);
+  const removeMember = useMutation(api.myFunctions.removeMember);
 
+  // Remove selectedMemberIds for members that were deleted
+  useEffect(() => {
+    if (room) {
+      setSelectedMemberIds(
+        selectedMemberIds.filter((id) =>
+          room.members.some((member) => member._id === id)
+        )
+      );
+    }
+  }, [room, selectedMemberIds]);
+
+  // Handle edge cases for room
   if (room === undefined) return <div>Loading...</div>;
   if (room === null) return <div>This room does not exist</div>;
 
+  // Utilities for participant badges
   const handleBadgeClick = (memberId: Id<"members">) => {
     if (selectedMemberIds.includes(memberId)) {
       setSelectedMemberIds(selectedMemberIds.filter((id) => id !== memberId));
@@ -28,9 +43,12 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       setSelectedMemberIds(selectedMemberIds.concat(memberId));
     }
   };
+  const handleBadgeDelete = (memberId: Id<"members">) => {
+    removeMember({ memberId }).catch(console.error);
+  };
 
+  // Utilities for select all badge
   const allMembersSelected = selectedMemberIds.length === room.members.length;
-
   const handleClickAll = () => {
     if (allMembersSelected) {
       setSelectedMemberIds([]);
@@ -73,28 +91,35 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
         </Button>
       </div>
 
-      <p className="text-sm">
-        Click on one or multiple participants to see the bill from that view.
-      </p>
+      {room.members.length > 0 && (
+        <p className="text-sm">
+          Click on one or multiple participants to see the bill from that view.
+        </p>
+      )}
 
       <div className="flex w-full space-x-2">
-        <Badge
-          onClick={handleClickAll}
-          variant="outline"
-          className="text-sm cursor-pointer"
-        >
-          {allMembersSelected ? "Deselect all" : "Select all"}
-        </Badge>
+        {room.members.length > 0 && (
+          <Badge
+            onClick={handleClickAll}
+            variant="outline"
+            className="text-sm cursor-pointer"
+          >
+            {allMembersSelected ? "Deselect all" : "Select all"}
+          </Badge>
+        )}
         {room.members.map((member) => (
           <Badge
             key={member._id}
-            onClick={() => handleBadgeClick(member._id)}
             variant={
               selectedMemberIds.includes(member._id) ? "default" : "outline"
             }
             className="text-sm cursor-pointer"
           >
-            {member.name}
+            <X onClick={() => handleBadgeDelete(member._id)} size={16} />
+            &nbsp;
+            <span onClick={() => handleBadgeClick(member._id)}>
+              {member.name}
+            </span>
           </Badge>
         ))}
       </div>
