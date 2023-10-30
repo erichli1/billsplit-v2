@@ -75,11 +75,14 @@ export const addRoom = mutation({
   args: {
     initiator: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, { initiator }) => {
     const code = generateRandomFourLetterString();
-    await ctx.db.insert("rooms", {
+    const roomId = await ctx.db.insert("rooms", {
       code: code,
-      members: [args.initiator],
+    });
+    await ctx.db.insert("members", {
+      name: initiator,
+      roomId,
     });
     return code;
   },
@@ -104,7 +107,10 @@ export const joinRoom = mutation({
     const room = await ctx.db.get(roomId);
     if (!room) throw new Error("Room not found");
 
-    await ctx.db.patch(roomId, { members: [...room.members, name] });
+    await ctx.db.insert("members", {
+      name,
+      roomId,
+    });
   },
 });
 
@@ -114,8 +120,27 @@ export const leaveRoom = mutation({
     const room = await ctx.db.get(roomId);
     if (!room) throw new Error("Room not found");
 
-    await ctx.db.patch(roomId, {
-      members: room.members.filter((member) => member !== name),
-    });
+    const member = await ctx.db
+      .query("members")
+      .filter(
+        (q) => q.eq(q.field("roomId"), roomId) && q.eq(q.field("name"), name)
+      )
+      .collect();
+
+    if (!member || member.length === 0) throw new Error("Member not found");
+
+    await ctx.db.delete(member[0]._id);
+  },
+});
+
+export const INTERNAL_removeMembersArrayFromRooms = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const rooms = await ctx.db.query("rooms").collect();
+    for (const room of rooms) {
+      if (room.members !== undefined) {
+        await ctx.db.patch(room._id, { members: undefined });
+      }
+    }
   },
 });

@@ -70,11 +70,6 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       <br />
 
       <h2 className="font-bold">Members</h2>
-      <ul className="list-disc list-inside">
-        {room.members.map((member) => (
-          <li key={member}>{member}</li>
-        ))}
-      </ul>
     </main>
   );
 }
