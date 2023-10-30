@@ -132,15 +132,3 @@ export const leaveRoom = mutation({
     await ctx.db.delete(member[0]._id);
   },
 });
-
-export const INTERNAL_removeMembersArrayFromRooms = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const rooms = await ctx.db.query("rooms").collect();
-    for (const room of rooms) {
-      if (room.members !== undefined) {
-        await ctx.db.patch(room._id, { members: undefined });
-      }
-    }
-  },
-});
