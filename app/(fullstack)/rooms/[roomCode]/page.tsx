@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Link } from "@/components/typography/link";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const searchParams = useSearchParams();
@@ -29,6 +30,12 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       </h1>
 
       <br />
+
+      <Button variant="destructive" asChild>
+        <Link href="/" className="no-underline">
+          Return to home screen
+        </Link>
+      </Button>
 
       {!inRoom && (
         <div className="flex w-full items-center space-x-2">

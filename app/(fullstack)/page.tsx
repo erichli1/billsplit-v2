@@ -62,7 +62,9 @@ export default function Home() {
         />
         {getRoom && (
           <Button asChild>
-            <Link href={`/rooms/${joinRoomInput}`}>Join Room</Link>
+            <Link href={`/rooms/${joinRoomInput}`} className="no-underline">
+              Join Room
+            </Link>
           </Button>
         )}
       </div>
