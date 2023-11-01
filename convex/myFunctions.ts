@@ -96,7 +96,12 @@ export const getRoom = query({
       .filter((q) => q.eq(q.field("roomId"), room[0]._id))
       .collect();
 
-    return { ...room[0], members };
+    const items = await ctx.db
+      .query("items")
+      .filter((q) => q.eq(q.field("roomId"), room[0]._id))
+      .collect();
+
+    return { ...room[0], members, items };
   },
 });
 
@@ -117,5 +122,38 @@ export const removeMember = mutation({
   args: { memberId: v.id("members") },
   handler: async (ctx, { memberId }) => {
     await ctx.db.delete(memberId);
+  },
+});
+
+export const addItem = mutation({
+  args: { roomId: v.id("rooms") },
+  handler: async (ctx, { roomId }) => {
+    await ctx.db.insert("items", {
+      roomId,
+      cost: 0,
+      name: "",
+      memberIds: [],
+    });
+  },
+});
+
+export const updateItemName = mutation({
+  args: { itemId: v.id("items"), name: v.string() },
+  handler: async (ctx, { itemId, name }) => {
+    await ctx.db.patch(itemId, { name });
+  },
+});
+
+export const updateItemCost = mutation({
+  args: { itemId: v.id("items"), cost: v.number() },
+  handler: async (ctx, { itemId, cost }) => {
+    await ctx.db.patch(itemId, { cost });
+  },
+});
+
+export const deleteItem = mutation({
+  args: { itemId: v.id("items") },
+  handler: async (ctx, { itemId }) => {
+    await ctx.db.delete(itemId);
   },
 });

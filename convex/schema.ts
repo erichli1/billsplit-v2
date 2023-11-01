@@ -24,6 +24,12 @@ export default defineSchema(
       name: v.string(),
       roomId: v.id("rooms"),
     }).index("byRoomAndName", ["roomId"]),
+    items: defineTable({
+      roomId: v.id("rooms"),
+      name: v.string(),
+      cost: v.number(),
+      memberIds: v.array(v.id("members")),
+    }).index("byRoomId", ["roomId"]),
   },
   // If you ever get an error about schema mismatch
   // between your data and your schema, and you cannot
