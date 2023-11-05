@@ -1,24 +1,63 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Room, Item } from "../types";
-import {
-  ColumnDef,
-  getCoreRowModel,
-  useReactTable,
-  flexRender,
-} from "@tanstack/react-table";
+import { Room } from "../types";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { SendHorizonal, Trash2 } from "lucide-react";
+import { PlusCircleIcon, Trash2Icon } from "lucide-react";
+import { formatMoney } from "../utils";
+import { Separator } from "@/components/ui/separator";
+
+function RenderPropertyComponent<ItemPropertyType extends string | number>({
+  itemProperty,
+  updateItemProperty,
+  className,
+}: {
+  itemProperty: ItemPropertyType;
+  updateItemProperty: (value: ItemPropertyType) => Promise<void>;
+  className?: string;
+}) {
+  const [value, setValue] = useState<ItemPropertyType>(itemProperty);
+  const [modified, setModified] = useState(false);
+
+  useMemo(() => {
+    if (!modified) setValue(itemProperty);
+  }, [itemProperty, modified]);
+
+  const handleEdit = (newValue: ItemPropertyType) => {
+    setModified(newValue !== itemProperty);
+    setValue(newValue);
+  };
+
+  return (
+    <div className={className}>
+      <Input
+        value={value}
+        type={typeof itemProperty === "number" ? "number" : undefined}
+        // Update the input value as user types
+        onChange={(e) => {
+          const typedValue =
+            typeof itemProperty === "number"
+              ? Number(e.target.value)
+              : e.target.value;
+          handleEdit(typedValue as ItemPropertyType);
+        }}
+        // Select all text when user focuses
+        onFocus={(e) => e.target.select()}
+        // Trigger update with db when user blurs
+        onBlur={() => {
+          if (value !== itemProperty) {
+            updateItemProperty(value)
+              .then(() => {
+                setModified(false);
+              })
+              .catch(console.error);
+          }
+        }}
+      />
+    </div>
+  );
+}
 
 export default function ItemizedBill({ room }: { room: Room }) {
   const addItem = useMutation(api.myFunctions.addItem);
@@ -26,177 +65,72 @@ export default function ItemizedBill({ room }: { room: Room }) {
   const updateItemName = useMutation(api.myFunctions.updateItemName);
   const updateItemCost = useMutation(api.myFunctions.updateItemCost);
 
-  const RenderNameComponent = ({ item }: { item: Item }) => {
-    const [name, setName] = useState(item.name);
-    const handleEdit = (value: string) => {
-      setName(value);
-    };
-
-    return (
-      <div className="flex w-full items-center">
-        <Input value={name} onChange={(e) => handleEdit(e.target.value)} />
-        {item.name !== name && (
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => {
-              updateItemName({ itemId: item._id, name }).catch(console.error);
-            }}
-          >
-            <SendHorizonal size="1.25em" />
-          </Button>
-        )}
-      </div>
-    );
-  };
-
-  const RenderCostComponent = ({ item }: { item: Item }) => {
-    const [cost, setCost] = useState(item.cost);
-    const handleEdit = (value: number) => {
-      setCost(value);
-    };
-
-    return (
-      <div className="flex w-full items-center">
-        <Input
-          type="number"
-          value={cost}
-          onChange={(e) => handleEdit(Number(e.target.value))}
-          // className={`${
-          //   item.cost !== cost ? "bg-yellow-800 bg-opacity-50" : ""
-          // }`}
-        />
-        {item.cost !== cost && (
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => {
-              updateItemCost({ itemId: item._id, cost }).catch(console.error);
-            }}
-          >
-            <SendHorizonal size="1.25em" />
-          </Button>
-        )}
-      </div>
-    );
-  };
-
-  const columns: ColumnDef<Item>[] = [
-    {
-      id: "actions",
-      cell: ({ row }) => (
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => {
-            deleteItem({ itemId: row.original._id }).catch(console.error);
-          }}
-        >
-          <Trash2 size="1.25em" />
-        </Button>
-      ),
-      footer: () => "",
-    },
-    {
-      id: "name",
-      header: "Name",
-      cell: ({ row }) => <RenderNameComponent item={row.original} />,
-      footer: () => "",
-    },
-    {
-      id: "cost",
-      header: "Cost",
-      cell: ({ row }) => <RenderCostComponent item={row.original} />,
-      footer: () =>
-        "Total $" +
-        room.items.reduce((acc, item) => acc + item.cost, 0).toFixed(2),
-    },
-    {
-      id: "members",
-      header: "Members",
-      cell: ({ row }) => {
-        row.original.memberIds.join(", ");
-      },
-      footer: () => "",
-    },
-  ];
-
-  const table = useReactTable({
-    data: useMemo(() => room.items, [room.items]),
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   return (
     <>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-        <TableHeader>
-          {table.getFooterGroups().map((footerGroup) => (
-            <TableRow key={footerGroup.id}>
-              {footerGroup.headers.map((footer) => {
-                return (
-                  <TableHead key={footer.id}>
-                    {footer.isPlaceholder
-                      ? null
-                      : flexRender(
-                          footer.column.columnDef.footer,
-                          footer.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-      </Table>
-      <br />
-      <Button
-        onClick={() => {
-          addItem({ roomId: room._id }).catch(console.error);
-        }}
-      >
-        Add item
-      </Button>
+      <div className="grid grid-cols-12 gap-2">
+        <div></div>
+        <div className="col-span-4 text-sm font-bold">Item</div>
+        <div className="col-span-3 text-sm font-bold">Cost</div>
+        <div className="col-span-4 text-sm font-bold">Participants</div>
+      </div>
+      {room.items.map((item) => (
+        <div key={item._id} className="grid grid-cols-12 gap-2">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => {
+              deleteItem({ itemId: item._id }).catch(console.error);
+            }}
+          >
+            <Trash2Icon size="1.25em" />
+          </Button>
+          <RenderPropertyComponent
+            itemProperty={item.name}
+            updateItemProperty={async (value) => {
+              await updateItemName({ itemId: item._id, name: value }).catch(
+                console.error
+              );
+            }}
+            className="col-span-4"
+          />
+          <RenderPropertyComponent
+            itemProperty={item.cost}
+            updateItemProperty={async (value) => {
+              await updateItemCost({ itemId: item._id, cost: value }).catch(
+                console.error
+              );
+            }}
+            className="col-span-3"
+          />
+        </div>
+      ))}
+      <div className="grid grid-cols-12 gap-2">
+        <div className="col-span-3">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => {
+              addItem({ roomId: room._id }).catch(console.error);
+            }}
+            className="w-max"
+          >
+            <div className="flex mx-2 items-center">
+              <PlusCircleIcon size="1.25em" />
+              <div className="text-sm ml-1">Add item</div>
+            </div>
+          </Button>
+        </div>
+        <div className="col-span-10 text-sm flex">
+          <Separator />
+        </div>
+      </div>
+      <div className="grid grid-cols-12 gap-2">
+        <div></div>
+        <div className="col-span-4 text-sm font-bold">Total</div>
+        <div className="col-span-3 text-sm font-bold">
+          {formatMoney(room.items.reduce((acc, item) => acc + item.cost, 0))}
+        </div>
+      </div>
     </>
   );
 }
