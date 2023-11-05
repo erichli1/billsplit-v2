@@ -120,8 +120,23 @@ export const addMemberToRoom = mutation({
 });
 
 export const removeMember = mutation({
-  args: { memberId: v.id("members") },
-  handler: async (ctx, { memberId }) => {
+  args: { memberId: v.id("members"), roomId: v.id("rooms") },
+  handler: async (ctx, { memberId, roomId }) => {
+    const items = await ctx.db
+      .query("items")
+      .filter((q) => q.eq(q.field("roomId"), roomId))
+      .collect();
+
+    // Remove member from all items (if exists)
+    for (const item of items) {
+      const newMemberIds = item.memberIds.filter(
+        (memberIdFromItem) => memberIdFromItem !== memberId
+      );
+
+      if (newMemberIds.length !== item.memberIds.length)
+        await ctx.db.patch(item._id, { memberIds: newMemberIds });
+    }
+
     await ctx.db.delete(memberId);
   },
 });

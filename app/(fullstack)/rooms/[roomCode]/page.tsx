@@ -35,7 +35,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
     }
   };
   const handleBadgeDelete = (memberId: Id<"members">) => {
-    removeMember({ memberId }).catch(console.error);
+    removeMember({ memberId, roomId: room._id }).catch(console.error);
   };
 
   // Utilities for select all badge
