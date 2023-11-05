@@ -84,6 +84,9 @@ export default function ItemizedBill({
   const removeMembersFromItem = useMutation(
     api.myFunctions.removeMembersFromItem
   );
+  const updateRoomTotal = useMutation(api.myFunctions.updateRoomTotal);
+
+  const [total, setTotal] = useState<number>(room.total ?? 0);
 
   return (
     <>
@@ -186,9 +189,27 @@ export default function ItemizedBill({
       </div>
       <div className="grid grid-cols-12 gap-2">
         <div></div>
-        <div className="col-span-4 text-sm font-bold">Total</div>
-        <div className="col-span-3 text-sm font-bold">
+        <div className="col-span-3 text-sm">Subtotal</div>
+        <div className="col-span-2 text-sm">
           {formatMoney(room.items.reduce((acc, item) => acc + item.cost, 0))}
+        </div>
+      </div>
+      <div className="grid grid-cols-12 gap-2">
+        <div></div>
+        <div className="col-span-3 text-sm font-bold flex items-center">
+          Total
+        </div>
+        <div className="col-span-2 text-sm font-bold">
+          <Input
+            value={total}
+            onChange={(e) => setTotal(Number(e.target.value))}
+            onBlur={() => {
+              if (total !== room.total)
+                updateRoomTotal({ roomId: room._id, total }).catch(
+                  console.error
+                );
+            }}
+          />
         </div>
       </div>
     </>

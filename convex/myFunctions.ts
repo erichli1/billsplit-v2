@@ -77,6 +77,7 @@ export const createRoom = mutation({
     const code = generateRandomFourLetterString();
     await ctx.db.insert("rooms", {
       code: code,
+      total: 0,
     });
     return code;
   },
@@ -181,5 +182,12 @@ export const removeMembersFromItem = mutation({
       (memberId) => !memberIds.includes(memberId)
     );
     await ctx.db.patch(itemId, { memberIds: newMemberIds });
+  },
+});
+
+export const updateRoomTotal = mutation({
+  args: { roomId: v.id("rooms"), total: v.number() },
+  handler: async (ctx, { roomId, total }) => {
+    await ctx.db.patch(roomId, { total });
   },
 });

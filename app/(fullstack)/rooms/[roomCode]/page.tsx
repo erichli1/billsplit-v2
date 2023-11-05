@@ -113,12 +113,13 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
           </Badge>
         ))}
       </div>
-
       <br />
 
       <h2 className="font-bold">Itemized bill</h2>
-
       <ItemizedBill room={room} selectedMemberIds={selectedMemberIds} />
+      <br />
+
+      <h2 className="font-bold">Split</h2>
     </main>
   );
 }
