@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Id } from "@/convex/_generated/dataModel";
 import { X } from "lucide-react";
 import ItemizedBill from "../../components/ItemizedBill";
+import { Split } from "../../components/Split";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const [name, setName] = useState<string>("");
@@ -120,6 +121,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       <br />
 
       <h2 className="font-bold">Split</h2>
+      <Split room={room} />
     </main>
   );
 }

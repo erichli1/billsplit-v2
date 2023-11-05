@@ -24,3 +24,8 @@ export type Item = {
   cost: number;
   memberIds: Array<Id<"members">>;
 };
+
+export type MemberBill = {
+  memberId: Id<"members">;
+  bill: number;
+};

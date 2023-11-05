@@ -167,25 +167,21 @@ export default function ItemizedBill({
           </div>
         </div>
       ))}
-      <div className="grid grid-cols-12 gap-2">
-        <div className="col-span-3">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => {
-              addItem({ roomId: room._id }).catch(console.error);
-            }}
-            className="w-max"
-          >
-            <div className="flex mx-2 items-center">
-              <PlusCircleIcon size="1.25em" />
-              <div className="text-sm ml-1">Add item</div>
-            </div>
-          </Button>
-        </div>
-        <div className="col-span-10 text-sm flex">
-          <Separator />
-        </div>
+      <div>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => {
+            addItem({ roomId: room._id }).catch(console.error);
+          }}
+          className="w-max"
+        >
+          <div className="flex mx-2 items-center">
+            <PlusCircleIcon size="1.25em" />
+            <div className="text-sm ml-1">Add item</div>
+          </div>
+        </Button>
+        <Separator />
       </div>
       <div className="grid grid-cols-12 gap-2">
         <div></div>
