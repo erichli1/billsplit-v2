@@ -19,7 +19,7 @@ export default defineSchema(
     }),
     rooms: defineTable({
       code: v.string(),
-      total: v.optional(v.number()),
+      total: v.number(),
     }).index("byCode", ["code"]),
     members: defineTable({
       name: v.string(),

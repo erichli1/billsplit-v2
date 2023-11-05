@@ -6,7 +6,7 @@ export type Room = {
   code: string;
   members: Array<Member>;
   items: Array<Item>;
-  total?: number;
+  total: number;
 };
 
 export type Member = {

@@ -86,7 +86,7 @@ export default function ItemizedBill({
   );
   const updateRoomTotal = useMutation(api.myFunctions.updateRoomTotal);
 
-  const [total, setTotal] = useState<number>(room.total ?? 0);
+  const [total, setTotal] = useState<number>(room.total);
 
   return (
     <>
