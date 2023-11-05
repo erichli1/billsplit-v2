@@ -118,7 +118,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
 
       <h2 className="font-bold">Itemized bill</h2>
 
-      <ItemizedBill room={room} />
+      <ItemizedBill room={room} selectedMemberIds={selectedMemberIds} />
     </main>
   );
 }

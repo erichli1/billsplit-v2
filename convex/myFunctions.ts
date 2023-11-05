@@ -157,3 +157,29 @@ export const deleteItem = mutation({
     await ctx.db.delete(itemId);
   },
 });
+
+export const addMembersToItem = mutation({
+  args: { itemId: v.id("items"), memberIds: v.array(v.id("members")) },
+  handler: async (ctx, { itemId, memberIds }) => {
+    const item = await ctx.db.get(itemId);
+    if (!item) throw new Error("Item not found");
+
+    // Add new members to item
+    const newMemberIds = Array.from(new Set([...item.memberIds, ...memberIds]));
+    await ctx.db.patch(itemId, { memberIds: newMemberIds });
+  },
+});
+
+export const removeMembersFromItem = mutation({
+  args: { itemId: v.id("items"), memberIds: v.array(v.id("members")) },
+  handler: async (ctx, { itemId, memberIds }) => {
+    const item = await ctx.db.get(itemId);
+    if (!item) throw new Error("Item not found");
+
+    // Remove members from item (if they exist)
+    const newMemberIds = item.memberIds.filter(
+      (memberId) => !memberIds.includes(memberId)
+    );
+    await ctx.db.patch(itemId, { memberIds: newMemberIds });
+  },
+});
