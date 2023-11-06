@@ -2,7 +2,7 @@ import { Item, Room } from "../types";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   AlertCircleIcon,
@@ -15,6 +15,33 @@ import { formatMoney } from "../utils";
 import { Separator } from "@/components/ui/separator";
 import { Id } from "@/convex/_generated/dataModel";
 import { Alert } from "@/components/ui/alert";
+
+const getWindowDimensions = () => {
+  if (typeof window === "undefined") return { width: 0, height: 0 };
+
+  const { innerWidth: width, innerHeight: height } = window;
+  return {
+    width,
+    height,
+  };
+};
+
+const useWindowDimensions = () => {
+  const [windowDimensions, setWindowDimensions] = useState(
+    getWindowDimensions()
+  );
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowDimensions(getWindowDimensions());
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return windowDimensions;
+};
 
 const allMemberIdsOnItem = (item: Item, memberIds: Array<Id<"members">>) => {
   return memberIds.every((memberId) => item.memberIds.includes(memberId));
@@ -91,25 +118,37 @@ export default function ItemizedBill({
   const [total, setTotal] = useState<number>(room.total);
   const subtotal = room.items.reduce((acc, item) => acc + item.cost, 0);
 
+  const { width } = useWindowDimensions();
+  const isMobile = width < 600;
+
+  const actionColumnClassName = isMobile ? "col-span-2 " : "col-span-1 ";
+  const itemColumnClassName = isMobile ? "col-span-6 " : "col-span-3 ";
+  const costColumnClassName = isMobile ? "col-span-4 " : "col-span-2 ";
+  const participantColumnClassName = isMobile ? "col-span-8 " : "col-span-5 ";
+
   return (
     <>
       <div className="grid grid-cols-12 gap-2">
-        <div></div>
-        <div className="col-span-3 text-sm font-bold">Item</div>
-        <div className="col-span-2 text-sm font-bold">Cost</div>
-        <div className="col-span-6 text-sm font-bold">Participants</div>
+        <div className={actionColumnClassName}></div>
+        <div className={itemColumnClassName + "text-sm font-bold"}>Item</div>
+        <div className={costColumnClassName + "text-sm font-bold"}>Cost</div>
+        {!isMobile && (
+          <div className="col-span-5 text-sm font-bold">Participants</div>
+        )}
       </div>
       {room.items.map((item) => (
         <div key={item._id} className="grid grid-cols-12 gap-2">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => {
-              deleteItem({ itemId: item._id }).catch(console.error);
-            }}
-          >
-            <Trash2Icon size="1.25em" />
-          </Button>
+          <div className={actionColumnClassName}>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => {
+                deleteItem({ itemId: item._id }).catch(console.error);
+              }}
+            >
+              <Trash2Icon size="1.25em" />
+            </Button>
+          </div>
           <RenderPropertyComponent
             itemProperty={item.name}
             updateItemProperty={async (value) => {
@@ -117,7 +156,7 @@ export default function ItemizedBill({
                 console.error
               );
             }}
-            className="col-span-3"
+            className={itemColumnClassName}
           />
           <RenderPropertyComponent
             itemProperty={item.cost}
@@ -126,11 +165,12 @@ export default function ItemizedBill({
                 console.error
               );
             }}
-            className="col-span-2"
+            className={costColumnClassName}
           />
+          {isMobile && <div className={actionColumnClassName}></div>}
           {selectedMemberIds.length > 0 &&
             (allMemberIdsOnItem(item, selectedMemberIds) ? (
-              <div className="col-span-1">
+              <div className={actionColumnClassName}>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -145,7 +185,7 @@ export default function ItemizedBill({
                 </Button>
               </div>
             ) : (
-              <div className="col-span-1">
+              <div className={actionColumnClassName}>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -160,7 +200,9 @@ export default function ItemizedBill({
                 </Button>
               </div>
             ))}
-          <div className="col-span-5 text-sm flex my-auto mx-0">
+          <div
+            className={participantColumnClassName + "text-sm flex my-auto mx-0"}
+          >
             {item.memberIds
               .map(
                 (memberId) =>
@@ -188,16 +230,22 @@ export default function ItemizedBill({
         <Separator />
       </div>
       <div className="grid grid-cols-12 gap-2">
-        <div></div>
-        <div className="col-span-3 text-sm">Subtotal</div>
-        <div className="col-span-2 text-sm">{formatMoney(subtotal)}</div>
+        <div className={actionColumnClassName}></div>
+        <div className={itemColumnClassName + "text-sm"}>Subtotal</div>
+        <div className={costColumnClassName + "text-sm"}>
+          {formatMoney(subtotal)}
+        </div>
       </div>
       <div className="grid grid-cols-12 gap-2">
-        <div></div>
-        <div className="col-span-3 text-sm font-bold flex items-center">
+        <div className={actionColumnClassName}></div>
+        <div
+          className={
+            itemColumnClassName + "text-sm font-bold flex items-center"
+          }
+        >
           Total
         </div>
-        <div className="col-span-2 text-sm font-bold">
+        <div className={costColumnClassName + "text-sm font-bold"}>
           <Input
             value={total}
             onChange={(e) => setTotal(Number(e.target.value))}

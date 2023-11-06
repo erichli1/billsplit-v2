@@ -120,34 +120,37 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
         </p>
       )}
 
-      <div className="flex w-full space-x-2">
+      <div className="flex flex-wrap w-full space-x-2">
         {room.members.length > 0 && (
-          <Badge
-            onClick={handleClickAll}
-            variant="outline"
-            className="text-sm cursor-pointer"
-          >
-            {allMembersSelected ? "Deselect all" : "Select all"}
-          </Badge>
+          <div className="pb-1">
+            <Badge
+              onClick={handleClickAll}
+              variant="outline"
+              className="text-sm cursor-pointer"
+            >
+              {allMembersSelected ? "Deselect all" : "Select all"}
+            </Badge>
+          </div>
         )}
         {room.members.map((member) => (
-          <Badge
-            key={member._id}
-            variant={
-              selectedMemberIds.includes(member._id) ? "default" : "outline"
-            }
-            className="text-sm cursor-pointer"
-            onClick={() => handleBadgeClick(member._id)}
-          >
-            <X
-              onClick={(e) => {
-                e.stopPropagation();
-                handleBadgeDelete(member._id);
-              }}
-              size={16}
-            />
-            &nbsp;{member.name}
-          </Badge>
+          <div className="pb-1" key={member._id}>
+            <Badge
+              variant={
+                selectedMemberIds.includes(member._id) ? "default" : "outline"
+              }
+              className="text-sm cursor-pointer"
+              onClick={() => handleBadgeClick(member._id)}
+            >
+              <X
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleBadgeDelete(member._id);
+                }}
+                size={16}
+              />
+              &nbsp;{member.name}
+            </Badge>
+          </div>
         ))}
       </div>
       <br />
