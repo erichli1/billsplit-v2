@@ -267,8 +267,10 @@ export default function ItemizedBill({
       {total < subtotal && (
         <Alert className="bg-red-600">
           <div className="flex items-center">
-            <AlertCircleIcon size="1.25em" />
-            <div className="mx-2">The total is less than the subtotal.</div>
+            <AlertCircleIcon size="1.25em" color="white" />
+            <div className="mx-2 text-white">
+              The total is less than the subtotal.
+            </div>
           </div>
         </Alert>
       )}

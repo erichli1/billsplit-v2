@@ -20,8 +20,8 @@ export function Split({
       {Math.abs(total - totalFromMemberBills) > 0.01 && (
         <Alert className="bg-amber-600">
           <div className="flex items-center">
-            <AlertTriangleIcon size="1.25em" />
-            <div className="mx-2">Something went wrong.</div>
+            <AlertTriangleIcon size="1.25em" color="white" />
+            <div className="mx-2 text-white">Something went wrong.</div>
           </div>
         </Alert>
       )}
