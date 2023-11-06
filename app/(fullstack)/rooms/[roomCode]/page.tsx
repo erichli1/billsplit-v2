@@ -46,6 +46,8 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
     }
   };
   const handleBadgeDelete = (memberId: Id<"members">) => {
+    if (selectedMemberIds.includes(memberId))
+      setSelectedMemberIds(selectedMemberIds.filter((id) => id !== memberId));
     removeMember({ memberId, roomId: room._id }).catch(console.error);
   };
 
@@ -135,12 +137,16 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
               selectedMemberIds.includes(member._id) ? "default" : "outline"
             }
             className="text-sm cursor-pointer"
+            onClick={() => handleBadgeClick(member._id)}
           >
-            <X onClick={() => handleBadgeDelete(member._id)} size={16} />
-            &nbsp;
-            <span onClick={() => handleBadgeClick(member._id)}>
-              {member.name}
-            </span>
+            <X
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBadgeDelete(member._id);
+              }}
+              size={16}
+            />
+            &nbsp;{member.name}
           </Badge>
         ))}
       </div>

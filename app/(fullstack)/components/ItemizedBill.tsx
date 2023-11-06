@@ -164,7 +164,8 @@ export default function ItemizedBill({
             {item.memberIds
               .map(
                 (memberId) =>
-                  room.members.find((member) => member._id === memberId)?.name
+                  room.members.find((member) => member._id === memberId)
+                    ?.name ?? "deleted"
               )
               .join(", ")}
           </div>

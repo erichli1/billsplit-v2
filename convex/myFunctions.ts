@@ -180,8 +180,20 @@ export const addMembersToItem = mutation({
     const item = await ctx.db.get(itemId);
     if (!item) throw new Error("Item not found");
 
+    const membersOfRoom = await ctx.db
+      .query("members")
+      .filter((q) => q.eq(q.field("roomId"), item.roomId))
+      .collect();
+
+    const validMemberIds = memberIds.filter(
+      (memberId) =>
+        membersOfRoom.find((member) => member._id === memberId) !== undefined
+    );
+
     // Add new members to item
-    const newMemberIds = Array.from(new Set([...item.memberIds, ...memberIds]));
+    const newMemberIds = Array.from(
+      new Set([...item.memberIds, ...validMemberIds])
+    );
     await ctx.db.patch(itemId, { memberIds: newMemberIds });
   },
 });
