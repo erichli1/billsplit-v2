@@ -126,6 +126,10 @@ export default function ItemizedBill({
   const costColumnClassName = isMobile ? "col-span-4 " : "col-span-2 ";
   const participantColumnClassName = isMobile ? "col-span-8 " : "col-span-5 ";
 
+  useMemo(() => {
+    setTotal(room.total);
+  }, [room.total]);
+
   return (
     <>
       <div className="grid grid-cols-12 gap-2">
