@@ -24,8 +24,18 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const removeMember = useMutation(api.myFunctions.removeMember);
 
   // Handle edge cases for room
-  if (room === undefined) return <div>Loading...</div>;
-  if (room === null) return <div>This room does not exist</div>;
+  if (room === undefined)
+    return (
+      <div className="flex items-center justify-center h-screen mx-auto">
+        Loading...
+      </div>
+    );
+  if (room === null)
+    return (
+      <div className="flex items-center justify-center h-screen mx-auto">
+        This room does not exist.
+      </div>
+    );
 
   // Utilities for participant badges
   const handleBadgeClick = (memberId: Id<"members">) => {
