@@ -12,6 +12,8 @@ import { CopyIcon, X } from "lucide-react";
 import ItemizedBill from "../../components/ItemizedBill";
 import { Split } from "../../components/Split";
 import { formatMoney, splitBill } from "../../utils";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const [name, setName] = useState<string>("");
@@ -22,6 +24,8 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const room = useQuery(api.myFunctions.getRoom, { roomCode: params.roomCode });
   const addMemberToRoom = useMutation(api.myFunctions.addMemberToRoom);
   const removeMember = useMutation(api.myFunctions.removeMember);
+
+  const { toast } = useToast();
 
   // Handle edge cases for room
   if (room === undefined)
@@ -69,8 +73,25 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
 
   return (
     <main className="container max-w-2xl flex flex-col gap-2 mt-8">
-      <h1 className="text-4xl font-extrabold text-center">
-        billsplit: {params.roomCode}
+      <h1 className="text-4xl font-extrabold">
+        <div className="flex items-center justify-center">
+          billsplit: {params.roomCode}
+          <Button
+            onClick={() => {
+              navigator.clipboard
+                .writeText(window.location.href)
+                .then(() => {
+                  toast({
+                    description: "Copied room link to clipboard",
+                  });
+                })
+                .catch(console.error);
+            }}
+            variant="ghost"
+          >
+            <CopyIcon />
+          </Button>
+        </div>
       </h1>
 
       <br />
@@ -167,7 +188,12 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
                 (acc += `${item.memberName}: ${formatMoney(item.bill)};\n`),
               ""
             );
-            navigator.clipboard.writeText(textToCopy).catch(console.error);
+            navigator.clipboard
+              .writeText(textToCopy)
+              .then(() => {
+                toast({ description: "Copied split to clipboard" });
+              })
+              .catch(console.error);
           }}
           variant="ghost"
           className="px-2"
@@ -177,6 +203,8 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       </h2>
 
       <Split memberBills={memberBills} total={room.total} />
+
+      <Toaster />
     </main>
   );
 }
