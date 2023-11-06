@@ -26,6 +26,6 @@ export type Item = {
 };
 
 export type MemberBill = {
-  memberId: Id<"members">;
+  memberName: string;
   bill: number;
 };

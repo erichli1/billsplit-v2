@@ -8,9 +8,10 @@ import { useState } from "react";
 import { Link } from "@/components/typography/link";
 import { Badge } from "@/components/ui/badge";
 import { Id } from "@/convex/_generated/dataModel";
-import { X } from "lucide-react";
+import { CopyIcon, X } from "lucide-react";
 import ItemizedBill from "../../components/ItemizedBill";
 import { Split } from "../../components/Split";
+import { formatMoney, splitBill } from "../../utils";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const [name, setName] = useState<string>("");
@@ -48,6 +49,12 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
     }
   };
 
+  const memberBills = splitBill({
+    total: room.total,
+    items: room.items,
+    members: room.members,
+  });
+
   return (
     <main className="container max-w-2xl flex flex-col gap-2 mt-8">
       <h1 className="text-4xl font-extrabold text-center">
@@ -64,7 +71,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
 
       <br />
 
-      <h2 className="font-bold">Participants</h2>
+      <h2 className="font-bold underline">Add all participants</h2>
 
       <div className="flex w-full items-center space-x-2">
         <Input
@@ -73,14 +80,27 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
           onChange={(e) => setName(e.target.value)}
         />
         <Button
-          disabled={name === ""}
+          disabled={
+            name === "" || room.members.some((member) => member.name === name)
+          }
           onClick={() => {
             addMemberToRoom({ roomId: room._id, name }).catch(console.error);
+            setName("");
           }}
         >
           Add
         </Button>
       </div>
+      {room.members.length > 0 && (
+        <p className="text-sm">
+          <span className="font-bold">Participants:</span>
+          &nbsp;
+          {room.members.map((member) => member.name).join(", ")}
+        </p>
+      )}
+      <br />
+
+      <h2 className="font-bold underline">Add items and tag participants</h2>
 
       {room.members.length > 0 && (
         <p className="text-sm">
@@ -116,12 +136,28 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       </div>
       <br />
 
-      <h2 className="font-bold">Itemized bill</h2>
       <ItemizedBill room={room} selectedMemberIds={selectedMemberIds} />
       <br />
 
-      <h2 className="font-bold">Split</h2>
-      <Split room={room} />
+      <h2>
+        <span className="font-bold underline">See the split</span>
+        <Button
+          onClick={() => {
+            const textToCopy = memberBills.reduce(
+              (acc, item) =>
+                (acc += `${item.memberName}: ${formatMoney(item.bill)};\n`),
+              ""
+            );
+            navigator.clipboard.writeText(textToCopy).catch(console.error);
+          }}
+          variant="ghost"
+          className="px-2"
+        >
+          <CopyIcon size="1em" />
+        </Button>
+      </h2>
+
+      <Split memberBills={memberBills} total={room.total} />
     </main>
   );
 }

@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
+  AlertCircleIcon,
   CheckSquareIcon,
   PlusCircleIcon,
   SquareIcon,
@@ -13,6 +14,7 @@ import {
 import { formatMoney } from "../utils";
 import { Separator } from "@/components/ui/separator";
 import { Id } from "@/convex/_generated/dataModel";
+import { Alert } from "@/components/ui/alert";
 
 const allMemberIdsOnItem = (item: Item, memberIds: Array<Id<"members">>) => {
   return memberIds.every((memberId) => item.memberIds.includes(memberId));
@@ -87,6 +89,7 @@ export default function ItemizedBill({
   const updateRoomTotal = useMutation(api.myFunctions.updateRoomTotal);
 
   const [total, setTotal] = useState<number>(room.total);
+  const subtotal = room.items.reduce((acc, item) => acc + item.cost, 0);
 
   return (
     <>
@@ -186,9 +189,7 @@ export default function ItemizedBill({
       <div className="grid grid-cols-12 gap-2">
         <div></div>
         <div className="col-span-3 text-sm">Subtotal</div>
-        <div className="col-span-2 text-sm">
-          {formatMoney(room.items.reduce((acc, item) => acc + item.cost, 0))}
-        </div>
+        <div className="col-span-2 text-sm">{formatMoney(subtotal)}</div>
       </div>
       <div className="grid grid-cols-12 gap-2">
         <div></div>
@@ -205,9 +206,19 @@ export default function ItemizedBill({
                   console.error
                 );
             }}
+            onFocus={(e) => e.target.select()}
+            className={total < subtotal ? "text-red-500" : undefined}
           />
         </div>
       </div>
+      {total < subtotal && (
+        <Alert className="bg-red-600">
+          <div className="flex items-center">
+            <AlertCircleIcon size="1.25em" />
+            <div className="mx-2">The total is less than the subtotal.</div>
+          </div>
+        </Alert>
+      )}
     </>
   );
 }
