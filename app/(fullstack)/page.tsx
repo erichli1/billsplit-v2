@@ -44,7 +44,7 @@ export default function Home() {
         <Input
           placeholder="Room to join"
           value={joinRoomInput}
-          onChange={(e) => setJoinRoomInput(e.target.value)}
+          onChange={(e) => setJoinRoomInput(e.target.value.toUpperCase())}
         />
         {getRoom && (
           <Button asChild>

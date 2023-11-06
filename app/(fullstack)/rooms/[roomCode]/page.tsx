@@ -21,7 +21,9 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
     Array<Id<"members">>
   >([]);
 
-  const room = useQuery(api.myFunctions.getRoom, { roomCode: params.roomCode });
+  const room = useQuery(api.myFunctions.getRoom, {
+    roomCode: params.roomCode.toUpperCase(),
+  });
   const addMemberToRoom = useMutation(api.myFunctions.addMemberToRoom);
   const removeMember = useMutation(api.myFunctions.removeMember);
 
@@ -75,7 +77,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
     <main className="container max-w-2xl flex flex-col gap-2 mt-8">
       <h1 className="text-4xl font-extrabold">
         <div className="flex items-center justify-center">
-          billsplit: {params.roomCode}
+          billsplit: {room.code}
           <Button
             onClick={() => {
               navigator.clipboard
