@@ -122,7 +122,10 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
             name === "" || room.members.some((member) => member.name === name)
           }
           onClick={() => {
-            const names = name.split(",").map((name) => name.trim());
+            const names = name
+              .split(",")
+              .map((name) => name.trim())
+              .filter((s) => s !== "");
 
             addMembersToRoom({
               roomId: room._id,
