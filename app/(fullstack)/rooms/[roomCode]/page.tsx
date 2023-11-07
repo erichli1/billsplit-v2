@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Link } from "@/components/typography/link";
 import { Badge } from "@/components/ui/badge";
 import { Id } from "@/convex/_generated/dataModel";
-import { CopyIcon, X } from "lucide-react";
+import { CopyIcon, TrashIcon } from "lucide-react";
 import ItemizedBill from "../../components/ItemizedBill";
 import { Split } from "../../components/Split";
 import { formatMoney, splitBill } from "../../utils";
@@ -126,20 +126,29 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
           Add
         </Button>
       </div>
-      {room.members.length > 0 && (
-        <p className="text-sm">
-          <span className="font-bold">Participants:</span>
-          &nbsp;
-          {room.members.map((member) => member.name).join(", ")}
-        </p>
-      )}
+      <div className="flex flex-wrap w-full space-x-2">
+        {room.members.map((member) => (
+          <div className="pb-1" key={`add-${member._id}}`}>
+            <Badge variant="outline" className="text-sm">
+              <TrashIcon
+                onClick={() => {
+                  handleBadgeDelete(member._id);
+                }}
+                size="1em"
+                className="cursor-pointer"
+              />
+              &nbsp;&nbsp;{member.name}
+            </Badge>
+          </div>
+        ))}
+      </div>
       <br />
 
       <h2 className="font-bold underline">Add items and tag participants</h2>
 
       {room.members.length > 0 && (
         <p className="text-sm">
-          Click on one or multiple participants to see the bill from that view.
+          Click to select participants to tag them to specific items.
         </p>
       )}
 
@@ -164,14 +173,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
               className="text-sm cursor-pointer"
               onClick={() => handleBadgeClick(member._id)}
             >
-              <X
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleBadgeDelete(member._id);
-                }}
-                size={16}
-              />
-              &nbsp;{member.name}
+              {member.name}
             </Badge>
           </div>
         ))}
