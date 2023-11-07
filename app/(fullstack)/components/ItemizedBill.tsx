@@ -56,14 +56,14 @@ function RenderPropertyComponent<ItemPropertyType extends string | number>({
   updateItemProperty: (value: ItemPropertyType) => Promise<void>;
   className?: string;
 }) {
-  const [value, setValue] = useState<ItemPropertyType>(itemProperty);
+  const [value, setValue] = useState<string>(itemProperty.toString());
   const [modified, setModified] = useState(false);
 
   useMemo(() => {
-    if (!modified) setValue(itemProperty);
+    if (!modified) setValue(itemProperty.toString());
   }, [itemProperty, modified]);
 
-  const handleEdit = (newValue: ItemPropertyType) => {
+  const handleEdit = (newValue: string) => {
     setModified(newValue !== itemProperty);
     setValue(newValue);
   };
@@ -75,24 +75,30 @@ function RenderPropertyComponent<ItemPropertyType extends string | number>({
         type={typeof itemProperty === "number" ? "number" : undefined}
         // Update the input value as user types
         onChange={(e) => {
-          const typedValue =
-            typeof itemProperty === "number"
-              ? Number(e.target.value)
-              : e.target.value;
-          handleEdit(typedValue as ItemPropertyType);
+          if (typeof itemProperty === "number") {
+            if (!Number.isNaN(Number(e.target.value)))
+              handleEdit(e.target.value);
+          } else {
+            handleEdit(e.target.value);
+          }
         }}
         // Select all text when user focuses
         onFocus={(e) => e.target.select()}
         // Trigger update with db when user blurs
         onBlur={() => {
-          if (value !== itemProperty) {
-            updateItemProperty(value)
+          if (value !== itemProperty.toString()) {
+            updateItemProperty(
+              (typeof itemProperty === "number"
+                ? Number(value)
+                : value) as ItemPropertyType
+            )
               .then(() => {
                 setModified(false);
               })
               .catch(console.error);
           }
         }}
+        inputMode={typeof itemProperty === "number" ? "decimal" : "text"}
       />
     </div>
   );
@@ -115,8 +121,9 @@ export default function ItemizedBill({
   );
   const updateRoomTotal = useMutation(api.myFunctions.updateRoomTotal);
 
-  const [total, setTotal] = useState<number>(room.total);
   const subtotal = room.items.reduce((acc, item) => acc + item.cost, 0);
+  const [total, setTotal] = useState<string>(room.total.toString());
+  const numericTotal = Number(total);
 
   const { width } = useWindowDimensions();
   const isMobile = width < 600;
@@ -127,7 +134,7 @@ export default function ItemizedBill({
   const participantColumnClassName = isMobile ? "col-span-8 " : "col-span-5 ";
 
   useMemo(() => {
-    setTotal(room.total);
+    setTotal(room.total.toString());
   }, [room.total]);
 
   return (
@@ -252,19 +259,24 @@ export default function ItemizedBill({
         <div className={costColumnClassName + "text-sm font-bold"}>
           <Input
             value={total}
-            onChange={(e) => setTotal(Number(e.target.value))}
+            onChange={(e) => {
+              if (!Number.isNaN(Number(e.target.value)))
+                setTotal(e.target.value);
+            }}
             onBlur={() => {
-              if (total !== room.total)
-                updateRoomTotal({ roomId: room._id, total }).catch(
-                  console.error
-                );
+              if (numericTotal !== room.total)
+                updateRoomTotal({
+                  roomId: room._id,
+                  total: numericTotal,
+                }).catch(console.error);
             }}
             onFocus={(e) => e.target.select()}
-            className={total < subtotal ? "text-red-500" : undefined}
+            className={numericTotal < subtotal ? "text-red-500" : undefined}
+            inputMode="decimal"
           />
         </div>
       </div>
-      {total < subtotal && (
+      {room.total < subtotal && (
         <Alert className="bg-red-600">
           <div className="flex items-center">
             <AlertCircleIcon size="1.25em" color="white" />
