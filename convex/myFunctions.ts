@@ -106,16 +106,15 @@ export const getRoom = query({
   },
 });
 
-export const addMemberToRoom = mutation({
-  args: { roomId: v.id("rooms"), name: v.string() },
-  handler: async (ctx, { roomId, name }) => {
+export const addMembersToRoom = mutation({
+  args: { roomId: v.id("rooms"), names: v.array(v.string()) },
+  handler: async (ctx, { roomId, names }) => {
     const room = await ctx.db.get(roomId);
     if (!room) throw new Error("Room not found");
 
-    await ctx.db.insert("members", {
-      name,
-      roomId,
-    });
+    await Promise.all(
+      names.map((name) => ctx.db.insert("members", { name, roomId }))
+    );
   },
 });
 

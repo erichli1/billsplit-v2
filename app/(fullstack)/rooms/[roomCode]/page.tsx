@@ -24,7 +24,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const room = useQuery(api.myFunctions.getRoom, {
     roomCode: params.roomCode.toUpperCase(),
   });
-  const addMemberToRoom = useMutation(api.myFunctions.addMemberToRoom);
+  const addMembersToRoom = useMutation(api.myFunctions.addMembersToRoom);
   const removeMember = useMutation(api.myFunctions.removeMember);
 
   const { toast } = useToast();
@@ -107,10 +107,13 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       <br />
 
       <h2 className="font-bold underline">Add all participants</h2>
+      <p className="text-sm">
+        You can use commas to add multiple participants at once.
+      </p>
 
       <div className="flex w-full items-center space-x-2">
         <Input
-          placeholder="Name"
+          placeholder="Name(s)"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -119,7 +122,12 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
             name === "" || room.members.some((member) => member.name === name)
           }
           onClick={() => {
-            addMemberToRoom({ roomId: room._id, name }).catch(console.error);
+            const names = name.split(",").map((name) => name.trim());
+
+            addMembersToRoom({
+              roomId: room._id,
+              names,
+            }).catch(console.error);
             setName("");
           }}
         >
