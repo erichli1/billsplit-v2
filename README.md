@@ -12,4 +12,4 @@ This billsplitting app allows for room creation and link sharing. Adding people 
 
 ## Setup
 
-`npm i` installs the necessary packages and `npm run dev` runs the app locally. Note this project is built on top of [Convex](https://www.convex.dev/) and requires an account on there.
+`npm i` installs the necessary packages and `npm run dev` runs the app locally. Note this project is built on top of [Convex](https://www.convex.dev/) and running locally or deploying it would require an account there.
