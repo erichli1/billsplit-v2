@@ -7,16 +7,6 @@ import { v } from "convex/values";
 
 export default defineSchema(
   {
-    documents: defineTable({
-      fieldOne: v.string(),
-      fieldTwo: v.object({
-        subFieldOne: v.array(v.number()),
-      }),
-    }),
-    // This definition matches the example query and mutation code:
-    numbers: defineTable({
-      value: v.number(),
-    }),
     rooms: defineTable({
       code: v.string(),
       total: v.number(),
