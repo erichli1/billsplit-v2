@@ -14,6 +14,18 @@ import { Split } from "../../components/Split";
 import { formatMoney, splitBill } from "../../utils";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const [name, setName] = useState<string>("");
@@ -26,8 +38,10 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
   });
   const addMembersToRoom = useMutation(api.myFunctions.addMembersToRoom);
   const removeMember = useMutation(api.myFunctions.removeMember);
+  const deleteRoom = useMutation(api.myFunctions.deleteRoom);
 
   const { toast } = useToast();
+  const router = useRouter();
 
   // Handle edge cases for room
   if (room === undefined)
@@ -76,7 +90,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
   return (
     <main className="container max-w-2xl flex flex-col gap-2 mt-8">
       <h1 className="text-4xl font-extrabold">
-        <div className="flex items-center justify-center">
+        <div className="flex items-center">
           billsplit: {room.code}
           <Button
             onClick={() => {
@@ -96,13 +110,45 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
         </div>
       </h1>
 
-      <br />
-
-      <Button variant="destructive" asChild>
-        <Link href="/" className="no-underline">
-          Return to home screen
-        </Link>
-      </Button>
+      <div className="flex w-full space-x-2">
+        <Button variant="secondary" asChild>
+          <Link href="/" className="no-underline">
+            Return to home screen
+          </Link>
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger>
+            <div>
+              <Button variant="destructive">Delete room</Button>
+            </div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Are you sure you want to delete?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will delete the room and all
+                associated information.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  deleteRoom({ roomId: room._id })
+                    .then(() => {
+                      router.push("/");
+                    })
+                    .catch(console.error);
+                }}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
 
       <br />
 
@@ -218,6 +264,16 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
       </h2>
 
       <Split memberBills={memberBills} total={room.total} />
+
+      {/* <Button
+        variant="destructive"
+        onClick={() => {
+          deleteRoom({ roomId: room._id }).catch(console.error);
+        }}
+      >
+        Delete room
+      </Button> */}
+      <br />
 
       <Toaster />
     </main>
