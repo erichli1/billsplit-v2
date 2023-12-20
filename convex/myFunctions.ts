@@ -5,7 +5,23 @@ import { generateRandomFourLetterString } from "./utils";
 export const createRoom = mutation({
   args: {},
   handler: async (ctx) => {
-    const code = generateRandomFourLetterString();
+    let code: string;
+    let counter = 0;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      code = generateRandomFourLetterString();
+      const possibleRoom = await ctx.db
+        .query("rooms")
+        .filter((q) => q.eq(q.field("code"), code))
+        .collect();
+      if (possibleRoom.length === 0) break;
+
+      counter += 1;
+      if (counter > 100)
+        throw new Error("Failed to generate unused room code.");
+    }
+
     await ctx.db.insert("rooms", {
       code: code,
       total: 0,
