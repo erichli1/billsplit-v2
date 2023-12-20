@@ -66,6 +66,9 @@ export const getRoom = query({
 export const deleteRoom = mutation({
   args: { roomId: v.id("rooms") },
   handler: async (ctx, { roomId }) => {
+    const room = await ctx.db.get(roomId);
+    if (!room) return;
+
     // Delete all items of a room
     const items = await ctx.db
       .query("items")
