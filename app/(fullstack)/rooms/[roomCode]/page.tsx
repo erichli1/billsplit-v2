@@ -26,6 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
 
 export default function RoomPage({ params }: { params: { roomCode: string } }) {
   const [name, setName] = useState<string>("");
@@ -236,7 +237,8 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
           </div>
         ))}
       </div>
-      <br />
+
+      <Separator />
 
       <ItemizedBill room={room} selectedMemberIds={selectedMemberIds} />
       <br />
