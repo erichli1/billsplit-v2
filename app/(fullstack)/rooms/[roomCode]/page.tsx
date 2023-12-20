@@ -149,6 +149,7 @@ export default function RoomPage({ params }: { params: { roomCode: string } }) {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      <p className="text-sm">Rooms will be auto-deleted after 14 days.</p>
 
       <br />
 

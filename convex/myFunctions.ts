@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { api } from "./_generated/api";
 import { generateRandomFourLetterString } from "./utils";
 
 export const createRoom = mutation({
@@ -22,10 +23,19 @@ export const createRoom = mutation({
         throw new Error("Failed to generate unused room code.");
     }
 
-    await ctx.db.insert("rooms", {
+    const newRoomId = await ctx.db.insert("rooms", {
       code: code,
       total: 0,
     });
+
+    await ctx.scheduler.runAfter(
+      1000 * 60 * 60 * 24 * 14,
+      api.myFunctions.deleteRoom,
+      {
+        roomId: newRoomId,
+      }
+    );
+
     return code;
   },
 });
