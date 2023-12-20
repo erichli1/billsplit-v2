@@ -106,6 +106,28 @@ export const getRoom = query({
   },
 });
 
+export const deleteRoom = mutation({
+  args: { roomId: v.id("rooms") },
+  handler: async (ctx, { roomId }) => {
+    // Delete all items of a room
+    const items = await ctx.db
+      .query("items")
+      .filter((q) => q.eq(q.field("roomId"), roomId))
+      .collect();
+    await Promise.all(items.map((item) => ctx.db.delete(item._id)));
+
+    // Delete all members of a room
+    const members = await ctx.db
+      .query("members")
+      .filter((q) => q.eq(q.field("roomId"), roomId))
+      .collect();
+    await Promise.all(members.map((member) => ctx.db.delete(member._id)));
+
+    // Delete room
+    await ctx.db.delete(roomId);
+  },
+});
+
 export const addMembersToRoom = mutation({
   args: { roomId: v.id("rooms"), names: v.array(v.string()) },
   handler: async (ctx, { roomId, names }) => {
